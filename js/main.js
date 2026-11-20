@@ -11,9 +11,18 @@ const app = Vue.createApp({
         };
     },
     created() {
-        window.addEventListener("load", () => {
+        const hideLoading = () => {
             this.loading = false;
-        });
+        };
+        // 原版只监听 window.load — 任一外部资源(字体/CDN/图片)卡住就会永久停在 LOADING。
+        // 改为 DOM 就绪即隐藏，并加 load 事件 + 定时器三重兜底，任一触发即可。
+        if (document.readyState === "loading") {
+            document.addEventListener("DOMContentLoaded", () => setTimeout(hideLoading, 300), { once: true });
+            window.addEventListener("load", hideLoading, { once: true });
+            setTimeout(hideLoading, 2000);
+        } else {
+            setTimeout(hideLoading, 300);
+        }
     },
     mounted() {
         window.addEventListener("scroll", this.handleScroll, true);
